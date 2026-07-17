@@ -32,11 +32,13 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Recharger si les images pointent encore vers unsplash (anciennes données)
-        boolean hasUnsplashImages = produitRepository.findAll().stream()
-            .anyMatch(p -> p.getImageUrl() != null && p.getImageUrl().contains("unsplash"));
+        // Recharger si les images pointent encore vers unsplash ou vercel/svg (anciennes données)
+        boolean hasOldImages = produitRepository.findAll().stream()
+            .anyMatch(p -> p.getImageUrl() == null
+                || p.getImageUrl().contains("unsplash")
+                || p.getImageUrl().contains(".svg"));
 
-        if (produitRepository.count() == 0 || hasUnsplashImages) {
+        if (produitRepository.count() == 0 || hasOldImages) {
             produitRepository.deleteAll();
             loadSaisons();
             loadCategories();
@@ -199,7 +201,7 @@ public class DataInitializer implements CommandLineRunner {
                 tomates.setVariete("Cherry");
                 tomates.setPrixUnitaire(new BigDecimal("4.50"));
                 tomates.setUniteMesure("kg");
-                tomates.setImageUrl("https://agrimarket1.vercel.app/images/tomatoes.svg");
+                tomates.setImageUrl("https://picsum.photos/seed/tomatoes/400/400");
                 tomates.setAgriculteur(agriculteurs.get(0));
                 tomates.setCategorie(categories.get(0));
                 tomates.setEstActif(true);
@@ -212,7 +214,7 @@ public class DataInitializer implements CommandLineRunner {
                 pommes.setVariete("Jonagold");
                 pommes.setPrixUnitaire(new BigDecimal("3.80"));
                 pommes.setUniteMesure("kg");
-                pommes.setImageUrl("https://agrimarket1.vercel.app/images/apples.svg");
+                pommes.setImageUrl("https://picsum.photos/seed/pommes/400/400");
                 pommes.setAgriculteur(agriculteurs.get(3));
                 pommes.setCategorie(categories.get(1));
                 pommes.setEstActif(true);
@@ -225,7 +227,7 @@ public class DataInitializer implements CommandLineRunner {
                 laitue.setVariete("Feuille de Chêne");
                 laitue.setPrixUnitaire(new BigDecimal("2.50"));
                 laitue.setUniteMesure("pièce");
-                laitue.setImageUrl("https://agrimarket1.vercel.app/images/lettuce.svg");
+                laitue.setImageUrl("https://picsum.photos/seed/laitue/400/400");
                 laitue.setAgriculteur(agriculteurs.get(0));
                 laitue.setCategorie(categories.get(0));
                 laitue.setEstActif(true);
@@ -238,7 +240,7 @@ public class DataInitializer implements CommandLineRunner {
                 menthe.setVariete("Menthe Poivrée");
                 menthe.setPrixUnitaire(new BigDecimal("3.00"));
                 menthe.setUniteMesure("bottes");
-                menthe.setImageUrl("https://agrimarket1.vercel.app/images/herbs.svg");
+                menthe.setImageUrl("https://picsum.photos/seed/menthe/400/400");
                 menthe.setAgriculteur(agriculteurs.get(1));
                 menthe.setCategorie(categories.get(2));
                 menthe.setEstActif(true);
@@ -251,7 +253,7 @@ public class DataInitializer implements CommandLineRunner {
                 fraises.setVariete("Gariguette");
                 fraises.setPrixUnitaire(new BigDecimal("6.50"));
                 fraises.setUniteMesure("kg");
-                fraises.setImageUrl("https://agrimarket1.vercel.app/images/strawberries.svg");
+                fraises.setImageUrl("https://picsum.photos/seed/fraises/400/400");
                 fraises.setAgriculteur(agriculteurs.get(1));
                 fraises.setCategorie(categories.get(1));
                 fraises.setEstActif(true);
@@ -264,7 +266,7 @@ public class DataInitializer implements CommandLineRunner {
                 carottes.setVariete("Nantaise");
                 carottes.setPrixUnitaire(new BigDecimal("2.80"));
                 carottes.setUniteMesure("kg");
-                carottes.setImageUrl("https://agrimarket1.vercel.app/images/carrots.svg");
+                carottes.setImageUrl("https://picsum.photos/seed/carottes/400/400");
                 carottes.setAgriculteur(agriculteurs.get(2));
                 carottes.setCategorie(categories.get(0));
                 carottes.setEstActif(true);
