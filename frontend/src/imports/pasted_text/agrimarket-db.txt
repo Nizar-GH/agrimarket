@@ -1,0 +1,480 @@
+Je veux créer une application mobile de vente des produits agricoles saisonnière. Je veux que l'application soit en react pour le Frontend et java pour le backend. Je veux un design ultra moderne avec l'effet waw.je veux créer une interface Dashboard web pour l'administrateur pour gérer l'application et visualiser les producteurs et les utilisateurs. En plus de gérer les produits et les pages et les images.  En plus adapte le script sql  avec l'application :
+-- =====================================================
+-- SCRIPT SQL - APPLICATION AGRIMARKET
+-- Basé sur la méthodologie Merise (MCD/MLD/MPD)
+-- Base de données : PostgreSQL (Supabase)
+-- =====================================================
+
+-- =====================================================
+-- SUPPRESSION DES TABLES EXISTANTES (si nécessaire)
+-- =====================================================
+DROP TABLE IF EXISTS paiement CASCADE;
+DROP TABLE IF EXISTS livraison CASCADE;
+DROP TABLE IF EXISTS ligne_commande CASCADE;
+DROP TABLE IF EXISTS commande CASCADE;
+DROP TABLE IF EXISTS stock CASCADE;
+DROP TABLE IF EXISTS produit CASCADE;
+DROP TABLE IF EXISTS client CASCADE;
+DROP TABLE IF EXISTS agriculteur CASCADE;
+DROP TABLE IF EXISTS categorie CASCADE;
+DROP TABLE IF EXISTS saison CASCADE;
+
+-- =====================================================
+-- TYPES ENUMÉRÉS
+-- =====================================================
+
+-- Type pour les statuts de commande
+CREATE TYPE statut_commande_enum AS ENUM (
+  'en_attente',
+  'confirmee',
+  'en_preparation',
+  'expediee',
+  'livree',
+  'annulee'
+);
+
+-- Type pour les statuts de livraison
+CREATE TYPE statut_livraison_enum AS ENUM (
+  'en_preparation',
+  'expediee',
+  'en_cours_livraison',
+  'livree',
+  'echec'
+);
+
+-- Type pour les statuts de paiement
+CREATE TYPE statut_paiement_enum AS ENUM (
+  'en_attente',
+  'confirme',
+  'refuse',
+  'rembourse'
+);
+
+-- Type pour les modes de paiement
+CREATE TYPE mode_paiement_enum AS ENUM (
+  'carte_bancaire',
+  'virement',
+  'especes',
+  'cheque',
+  'paypal'
+);
+
+-- =====================================================
+-- TABLE : SAISON
+-- Représente les saisons agricoles
+-- =====================================================
+CREATE TABLE saison (
+  id SERIAL PRIMARY KEY,
+  nom_saison VARCHAR(50) NOT NULL UNIQUE,
+  date_debut DATE NOT NULL,
+  date_fin DATE NOT NULL,
+  description TEXT,
+  icone VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  CONSTRAINT chk_dates_saison CHECK (date_fin > date_debut)
+);
+
+-- Index pour optimiser les recherches par dates
+CREATE INDEX idx_saison_dates ON saison(date_debut, date_fin);
+
+COMMENT ON TABLE saison IS 'Table des saisons agricoles pour la saisonnalité des produits';
+
+-- =====================================================
+-- TABLE : CATEGORIE
+-- Catégories de produits agricoles
+-- =====================================================
+CREATE TABLE categorie (
+  id SERIAL PRIMARY KEY,
+  libelle VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  image_url TEXT,
+  ordre_affichage INTEGER DEFAULT 0,
+  est_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_categorie_active ON categorie(est_active) WHERE est_active = TRUE;
+
+COMMENT ON TABLE categorie IS 'Catégories de produits (Légumes, Fruits, etc.)';
+
+-- =====================================================
+-- TABLE : AGRICULTEUR
+-- Producteurs / Agriculteurs partenaires
+-- =====================================================
+CREATE TABLE agriculteur (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  nom VARCHAR(150) NOT NULL,
+  prenom VARCHAR(150) NOT NULL,
+  nom_exploitation VARCHAR(200),
+  email VARCHAR(255) NOT NULL UNIQUE,
+  telephone VARCHAR(30),
+  adresse TEXT,
+  code_postal VARCHAR(10),
+  ville VARCHAR(100),
+  siret VARCHAR(14) UNIQUE,
+  description TEXT,
+  photo_url TEXT,
+  note_moyenne DECIMAL(3,2) DEFAULT 0,
+  est_verifie BOOLEAN DEFAULT FALSE,
+  est_actif BOOLEAN DEFAULT TRUE,
+  date_inscription TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  CONSTRAINT chk_email_agriculteur CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+  CONSTRAINT chk_siret CHECK (siret IS NULL OR LENGTH(siret) = 14),
+  CONSTRAINT chk_note CHECK (note_moyenne >= 0 AND note_moyenne <= 5)
+);
+
+CREATE INDEX idx_agriculteur_email ON agriculteur(email);
+CREATE INDEX idx_agriculteur_actif ON agriculteur(est_actif) WHERE est_actif = TRUE;
+CREATE INDEX idx_agriculteur_user ON agriculteur(user_id);
+
+COMMENT ON TABLE agriculteur IS 'Producteurs et agriculteurs partenaires de la plateforme';
+
+-- =====================================================
+-- TABLE : CLIENT
+-- Clients / Consommateurs
+-- =====================================================
+CREATE TABLE client (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  nom VARCHAR(150) NOT NULL,
+  prenom VARCHAR(150) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  telephone VARCHAR(30),
+  adresse_livraison TEXT,
+  code_postal VARCHAR(10),
+  ville VARCHAR(100),
+  date_inscription TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  est_actif BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  CONSTRAINT chk_email_client CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+CREATE INDEX idx_client_email ON client(email);
+CREATE INDEX idx_client_user ON client(user_id);
+CREATE INDEX idx_client_actif ON client(est_actif) WHERE est_actif = TRUE;
+
+COMMENT ON TABLE client IS 'Clients et consommateurs de la plateforme';
+
+-- =====================================================
+-- TABLE : PRODUIT
+-- Produits agricoles
+-- =====================================================
+CREATE TABLE produit (
+  id SERIAL PRIMARY KEY,
+  nom_produit VARCHAR(200) NOT NULL,
+  description_produit TEXT,
+  variete VARCHAR(100),
+  prix_unitaire DECIMAL(10,2) NOT NULL,
+  unite_mesure VARCHAR(20) DEFAULT 'kg',
+  image_url TEXT,
+  
+  -- Clés étrangères
+  id_agriculteur INTEGER NOT NULL REFERENCES agriculteur(id) ON DELETE CASCADE,
+  id_categorie INTEGER REFERENCES categorie(id) ON DELETE SET NULL,
+  id_saison INTEGER REFERENCES saison(id) ON DELETE SET NULL,
+  
+  -- Métadonnées
+  est_bio BOOLEAN DEFAULT FALSE,
+  est_local BOOLEAN DEFAULT TRUE,
+  est_actif BOOLEAN DEFAULT TRUE,
+  est_nouveau BOOLEAN DEFAULT FALSE,
+  
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  CONSTRAINT chk_prix_positif CHECK (prix_unitaire > 0)
+);
+
+CREATE INDEX idx_produit_agriculteur ON produit(id_agriculteur);
+CREATE INDEX idx_produit_categorie ON produit(id_categorie);
+CREATE INDEX idx_produit_saison ON produit(id_saison);
+CREATE INDEX idx_produit_actif ON produit(est_actif) WHERE est_actif = TRUE;
+CREATE INDEX idx_produit_nom ON produit USING gin(to_tsvector('french', nom_produit));
+
+COMMENT ON TABLE produit IS 'Catalogue des produits agricoles';
+
+-- =====================================================
+-- TABLE : STOCK
+-- Gestion des stocks par produit
+-- =====================================================
+CREATE TABLE stock (
+  id SERIAL PRIMARY KEY,
+  id_produit INTEGER NOT NULL UNIQUE REFERENCES produit(id) ON DELETE CASCADE,
+  quantite_disponible INTEGER NOT NULL DEFAULT 0,
+  seuil_alerte INTEGER DEFAULT 10,
+  date_mise_a_jour TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  CONSTRAINT chk_quantite_positive CHECK (quantite_disponible >= 0)
+);
+
+CREATE INDEX idx_stock_produit ON stock(id_produit);
+CREATE INDEX idx_stock_alerte ON stock(quantite_disponible) WHERE quantite_disponible <= 10;
+
+COMMENT ON TABLE stock IS 'Suivi des stocks de produits';
+
+-- =====================================================
+-- TABLE : COMMANDE
+-- Commandes clients
+-- =====================================================
+CREATE TABLE commande (
+  id SERIAL PRIMARY KEY,
+  numero_commande VARCHAR(20) NOT NULL UNIQUE,
+  id_client INTEGER NOT NULL REFERENCES client(id) ON DELETE CASCADE,
+  date_commande TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  statut statut_commande_enum DEFAULT 'en_attente',
+  total DECIMAL(10,2) DEFAULT 0,
+  adresse_livraison TEXT,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_commande_client ON commande(id_client);
+CREATE INDEX idx_commande_date ON commande(date_commande DESC);
+CREATE INDEX idx_commande_statut ON commande(statut);
+CREATE INDEX idx_commande_numero ON commande(numero_commande);
+
+COMMENT ON TABLE commande IS 'Commandes passées par les clients';
+
+-- =====================================================
+-- TABLE : LIGNE_COMMANDE
+-- Détail des produits dans une commande
+-- =====================================================
+CREATE TABLE ligne_commande (
+  id SERIAL PRIMARY KEY,
+  id_commande INTEGER NOT NULL REFERENCES commande(id) ON DELETE CASCADE,
+  id_produit INTEGER NOT NULL REFERENCES produit(id) ON DELETE RESTRICT,
+  quantite INTEGER NOT NULL,
+  prix_unitaire_snapshot DECIMAL(10,2) NOT NULL,
+  prix_ligne DECIMAL(10,2) GENERATED ALWAYS AS (quantite * prix_unitaire_snapshot) STORED,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  CONSTRAINT chk_quantite_ligne CHECK (quantite > 0),
+  CONSTRAINT uq_commande_produit UNIQUE (id_commande, id_produit)
+);
+
+CREATE INDEX idx_ligne_commande ON ligne_commande(id_commande);
+CREATE INDEX idx_ligne_produit ON ligne_commande(id_produit);
+
+COMMENT ON TABLE ligne_commande IS 'Lignes de détail des commandes (produits commandés)';
+
+-- =====================================================
+-- TABLE : LIVRAISON
+-- Suivi des livraisons
+-- =====================================================
+CREATE TABLE livraison (
+  id SERIAL PRIMARY KEY,
+  id_commande INTEGER NOT NULL REFERENCES commande(id) ON DELETE CASCADE,
+  date_prevue DATE,
+  date_livraison DATE,
+  adresse_livraison TEXT,
+  statut statut_livraison_enum DEFAULT 'en_preparation',
+  numero_suivi VARCHAR(50),
+  transporteur VARCHAR(100),
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_livraison_commande ON livraison(id_commande);
+CREATE INDEX idx_livraison_statut ON livraison(statut);
+CREATE INDEX idx_livraison_date ON livraison(date_prevue);
+
+COMMENT ON TABLE livraison IS 'Suivi des livraisons des commandes';
+
+-- =====================================================
+-- TABLE : PAIEMENT
+-- Gestion des paiements
+-- =====================================================
+CREATE TABLE paiement (
+  id SERIAL PRIMARY KEY,
+  id_commande INTEGER NOT NULL REFERENCES commande(id) ON DELETE CASCADE,
+  montant DECIMAL(10,2) NOT NULL,
+  date_paiement TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  mode_paiement mode_paiement_enum NOT NULL,
+  statut statut_paiement_enum DEFAULT 'en_attente',
+  reference_transaction VARCHAR(100),
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  CONSTRAINT chk_montant_positif CHECK (montant > 0)
+);
+
+CREATE INDEX idx_paiement_commande ON paiement(id_commande);
+CREATE INDEX idx_paiement_statut ON paiement(statut);
+CREATE INDEX idx_paiement_date ON paiement(date_paiement DESC);
+
+COMMENT ON TABLE paiement IS 'Historique des paiements des commandes';
+
+-- =====================================================
+-- FONCTIONS UTILITAIRES
+-- =====================================================
+
+-- Fonction pour générer un numéro de commande unique
+CREATE OR REPLACE FUNCTION generate_numero_commande()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.numero_commande := 'CMD-' || TO_CHAR(NOW(), 'YYYYMMDD') || '-' || LPAD(NEW.id::TEXT, 5, '0');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger pour générer automatiquement le numéro de commande
+CREATE TRIGGER trg_generate_numero_commande
+  BEFORE INSERT ON commande
+  FOR EACH ROW
+  WHEN (NEW.numero_commande IS NULL)
+  EXECUTE FUNCTION generate_numero_commande();
+
+-- Fonction pour mettre à jour le total d'une commande
+CREATE OR REPLACE FUNCTION update_commande_total()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE commande
+  SET total = (
+    SELECT COALESCE(SUM(prix_ligne), 0)
+    FROM ligne_commande
+    WHERE id_commande = COALESCE(NEW.id_commande, OLD.id_commande)
+  ),
+  updated_at = NOW()
+  WHERE id = COALESCE(NEW.id_commande, OLD.id_commande);
+  
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers pour maintenir le total de la commande
+CREATE TRIGGER trg_update_total_insert
+  AFTER INSERT ON ligne_commande
+  FOR EACH ROW
+  EXECUTE FUNCTION update_commande_total();
+
+CREATE TRIGGER trg_update_total_update
+  AFTER UPDATE ON ligne_commande
+  FOR EACH ROW
+  EXECUTE FUNCTION update_commande_total();
+
+CREATE TRIGGER trg_update_total_delete
+  AFTER DELETE ON ligne_commande
+  FOR EACH ROW
+  EXECUTE FUNCTION update_commande_total();
+
+-- Fonction pour mettre à jour la date de modification
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Appliquer le trigger updated_at sur toutes les tables
+CREATE TRIGGER trg_update_saison BEFORE UPDATE ON saison FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_update_categorie BEFORE UPDATE ON categorie FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_update_agriculteur BEFORE UPDATE ON agriculteur FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_update_client BEFORE UPDATE ON client FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_update_produit BEFORE UPDATE ON produit FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_update_commande BEFORE UPDATE ON commande FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_update_livraison BEFORE UPDATE ON livraison FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_update_paiement BEFORE UPDATE ON paiement FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- =====================================================
+-- DONNÉES DE DÉMONSTRATION
+-- =====================================================
+
+-- Saisons
+INSERT INTO saison (nom_saison, date_debut, date_fin, description, icone) VALUES
+('Printemps', '2026-03-21', '2026-06-20', 'Saison des semis et des premières récoltes', 'flower'),
+('Été', '2026-06-21', '2026-09-22', 'Saison des fruits et légumes du soleil', 'sun'),
+('Automne', '2026-09-23', '2026-12-20', 'Saison des récoltes et des conserves', 'leaf'),
+('Hiver', '2025-12-21', '2026-03-20', 'Saison des légumes racines et agrumes', 'snowflake');
+
+-- Catégories
+INSERT INTO categorie (libelle, description, ordre_affichage) VALUES
+('Légumes', 'Légumes frais de saison', 1),
+('Fruits', 'Fruits frais et de saison', 2),
+('Herbes aromatiques', 'Herbes fraîches pour la cuisine', 3),
+('Produits transformés', 'Confitures, conserves, jus', 4),
+('Oeufs et produits laitiers', 'Produits de la ferme', 5);
+
+-- Agriculteurs de démonstration
+INSERT INTO agriculteur (nom, prenom, nom_exploitation, email, telephone, adresse, code_postal, ville, siret, description, est_verifie, note_moyenne) VALUES
+('Dupont', 'Marie', 'Ferme des Collines', 'marie.dupont@ferme.fr', '+33 6 12 34 56 78', '12 Route des Champs', '14000', 'Caen', '12345678901234', 'Productrice bio depuis 15 ans, spécialisée dans les légumes racines.', TRUE, 4.9),
+('Martin', 'Pierre', 'Les Jardins du Soleil', 'pierre.martin@jardins.fr', '+33 6 98 76 54 32', '45 Chemin de Provence', '13100', 'Aix-en-Provence', '98765432109876', 'Maraîcher passionné, fruits et légumes méditerranéens.', TRUE, 4.8),
+('Bernard', 'Sophie', 'Potager de Sophie', 'sophie.bernard@potager.fr', '+33 6 11 22 33 44', '78 Rue de la Mer', '35000', 'Rennes', '11223344556677', 'Spécialiste des légumes anciens et oubliés.', TRUE, 5.0);
+
+-- Produits de démonstration
+INSERT INTO produit (nom_produit, description_produit, variete, prix_unitaire, unite_mesure, id_agriculteur, id_categorie, id_saison, est_bio, est_nouveau) VALUES
+('Carottes Bio', 'Carottes fraîches cultivées sans pesticides', 'Nantaise', 2.50, 'kg', 1, 1, 4, TRUE, TRUE),
+('Tomates Cœur de Bœuf', 'Tomates juteuses et savoureuses', 'Cœur de Bœuf', 4.90, 'kg', 2, 1, 2, TRUE, FALSE),
+('Salade Batavia', 'Salade croquante et fraîche', 'Batavia', 1.80, 'pièce', 3, 1, 1, TRUE, FALSE),
+('Pommes Gala', 'Pommes sucrées et croquantes', 'Gala', 3.20, 'kg', 2, 2, 3, FALSE, TRUE),
+('Courgettes', 'Courgettes tendres du jardin', 'Verte', 2.80, 'kg', 1, 1, 2, TRUE, FALSE),
+('Fraises', 'Fraises parfumées de plein champ', 'Gariguette', 6.50, 'barquette', 3, 2, 1, TRUE, TRUE);
+
+-- Stocks
+INSERT INTO stock (id_produit, quantite_disponible, seuil_alerte) VALUES
+(1, 120, 20),
+(2, 45, 15),
+(3, 30, 10),
+(4, 89, 25),
+(5, 67, 15),
+(6, 0, 10);
+
+-- Clients de démonstration
+INSERT INTO client (nom, prenom, email, telephone, adresse_livraison, code_postal, ville) VALUES
+('Leroy', 'Jean', 'jean.leroy@email.fr', '+33 6 55 44 33 22', '15 Avenue des Fleurs', '75001', 'Paris'),
+('Richard', 'Anne', 'anne.richard@email.fr', '+33 6 77 88 99 00', '28 Rue du Commerce', '69001', 'Lyon'),
+('Moreau', 'Lucas', 'lucas.moreau@email.fr', '+33 6 33 22 11 00', '5 Place de la Mairie', '33000', 'Bordeaux');
+
+-- =====================================================
+-- POLITIQUES RLS (Row Level Security)
+-- =====================================================
+
+-- Activer RLS sur toutes les tables
+ALTER TABLE saison ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categorie ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agriculteur ENABLE ROW LEVEL SECURITY;
+ALTER TABLE client ENABLE ROW LEVEL SECURITY;
+ALTER TABLE produit ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stock ENABLE ROW LEVEL SECURITY;
+ALTER TABLE commande ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ligne_commande ENABLE ROW LEVEL SECURITY;
+ALTER TABLE livraison ENABLE ROW LEVEL SECURITY;
+ALTER TABLE paiement ENABLE ROW LEVEL SECURITY;
+
+-- Politiques de lecture publique pour certaines tables
+CREATE POLICY "Saisons visibles par tous" ON saison FOR SELECT USING (true);
+CREATE POLICY "Catégories visibles par tous" ON categorie FOR SELECT USING (est_active = true);
+CREATE POLICY "Produits actifs visibles par tous" ON produit FOR SELECT USING (est_actif = true);
+CREATE POLICY "Agriculteurs actifs visibles par tous" ON agriculteur FOR SELECT USING (est_actif = true);
+
+-- Politiques pour les clients (accès à leurs propres données)
+CREATE POLICY "Clients peuvent voir leur profil" ON client FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Clients peuvent modifier leur profil" ON client FOR UPDATE USING (auth.uid() = user_id);
+
+-- Politiques pour les commandes
+CREATE POLICY "Clients voient leurs commandes" ON commande FOR SELECT USING (
+  id_client IN (SELECT id FROM client WHERE user_id = auth.uid())
+);
+
+CREATE POLICY "Clients peuvent créer des commandes" ON commande FOR INSERT WITH CHECK (
+  id_client IN (SELECT id FROM client WHERE user_id = auth.uid())
+);
+
+-- Note: Des politiques plus complexes pour les administrateurs devront être ajoutées
+-- via une table de rôles séparée (user_roles) comme recommandé dans les bonnes pratiques.
+
+-- =====================================================
+-- FIN DU SCRIPT
+-- =====================================================
