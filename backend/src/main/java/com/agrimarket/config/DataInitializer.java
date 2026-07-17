@@ -125,7 +125,7 @@ public class DataInitializer implements CommandLineRunner {
             marie.setDescription("Productrice bio depuis 15 ans, spécialisée dans les légumes racines.");
             marie.setEstVerifie(true);
             marie.setEstActif(true);
-            marie.setNoteMoyenne(4.90);
+            marie.setNoteMoyenne(new BigDecimal("4.90"));
             marie.setDateInscription(LocalDateTime.now());
             agriculteurRepository.save(marie);
 
@@ -142,7 +142,7 @@ public class DataInitializer implements CommandLineRunner {
             pierre.setDescription("Maraîcher passionné, fruits et légumes méditerranéens.");
             pierre.setEstVerifie(true);
             pierre.setEstActif(true);
-            pierre.setNoteMoyenne(4.80);
+            pierre.setNoteMoyenne(new BigDecimal("4.80"));
             pierre.setDateInscription(LocalDateTime.now());
             agriculteurRepository.save(pierre);
 
@@ -159,7 +159,7 @@ public class DataInitializer implements CommandLineRunner {
             sophie.setDescription("Spécialiste des légumes anciens et oubliés.");
             sophie.setEstVerifie(true);
             sophie.setEstActif(true);
-            sophie.setNoteMoyenne(5.00);
+            sophie.setNoteMoyenne(new BigDecimal("5.00"));
             sophie.setDateInscription(LocalDateTime.now());
             agriculteurRepository.save(sophie);
 
@@ -176,7 +176,7 @@ public class DataInitializer implements CommandLineRunner {
             jean.setDescription("Production de fruits bio, spécialité pommes et poires.");
             jean.setEstVerifie(true);
             jean.setEstActif(true);
-            jean.setNoteMoyenne(4.70);
+            jean.setNoteMoyenne(new BigDecimal("4.70"));
             jean.setDateInscription(LocalDateTime.now());
             agriculteurRepository.save(jean);
         }
