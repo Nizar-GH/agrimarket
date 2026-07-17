@@ -193,7 +193,7 @@ public class DataInitializer implements CommandLineRunner {
                 tomates.setNomProduit("Tomates Cerises Bio");
                 tomates.setDescriptionProduit("Délicieuses tomates cerises cultivées biologiquement, parfaites pour les salades");
                 tomates.setVariete("Cherry");
-                tomates.setPrixUnitaire(BigDecimal.valueOf(4.50));
+                tomates.setPrixUnitaire(new BigDecimal("4.50"));
                 tomates.setUniteMesure("kg");
                 tomates.setAgriculteur(agriculteurs.get(0));
                 tomates.setCategorie(categories.get(0));
@@ -205,7 +205,7 @@ public class DataInitializer implements CommandLineRunner {
                 pommes.setNomProduit("Pommes Jonagold");
                 pommes.setDescriptionProduit("Pommes croquantes et juteuses de variété Jonagold");
                 pommes.setVariete("Jonagold");
-                pommes.setPrixUnitaire(BigDecimal.valueOf(3.80));
+                pommes.setPrixUnitaire(new BigDecimal("3.80"));
                 pommes.setUniteMesure("kg");
                 pommes.setAgriculteur(agriculteurs.get(3));
                 pommes.setCategorie(categories.get(1));
@@ -217,7 +217,7 @@ public class DataInitializer implements CommandLineRunner {
                 laitue.setNomProduit("Laitue Verte Feuille de Chêne");
                 laitue.setDescriptionProduit("Laitue fraîche avec feuilles délicates et saveur douce");
                 laitue.setVariete("Feuille de Chêne");
-                laitue.setPrixUnitaire(BigDecimal.valueOf(2.50));
+                laitue.setPrixUnitaire(new BigDecimal("2.50"));
                 laitue.setUniteMesure("pièce");
                 laitue.setAgriculteur(agriculteurs.get(0));
                 laitue.setCategorie(categories.get(0));
@@ -229,7 +229,7 @@ public class DataInitializer implements CommandLineRunner {
                 menthe.setNomProduit("Menthe Fraîche Bio");
                 menthe.setDescriptionProduit("Menthe aromatique fraîche pour thés et cocktails");
                 menthe.setVariete("Menthe Poivrée");
-                menthe.setPrixUnitaire(BigDecimal.valueOf(3.00));
+                menthe.setPrixUnitaire(new BigDecimal("3.00"));
                 menthe.setUniteMesure("bottes");
                 menthe.setAgriculteur(agriculteurs.get(1));
                 menthe.setCategorie(categories.get(2));
@@ -241,7 +241,7 @@ public class DataInitializer implements CommandLineRunner {
                 fraises.setNomProduit("Fraises de Saison");
                 fraises.setDescriptionProduit("Fraises juteuses et savoureuses de nos champs");
                 fraises.setVariete("Gariguette");
-                fraises.setPrixUnitaire(BigDecimal.valueOf(6.50));
+                fraises.setPrixUnitaire(new BigDecimal("6.50"));
                 fraises.setUniteMesure("kg");
                 fraises.setAgriculteur(agriculteurs.get(1));
                 fraises.setCategorie(categories.get(1));
@@ -253,7 +253,7 @@ public class DataInitializer implements CommandLineRunner {
                 carottes.setNomProduit("Carottes Orange Bio");
                 carottes.setDescriptionProduit("Carottes croquantes et sucrées, cultivées sans pesticides");
                 carottes.setVariete("Nantaise");
-                carottes.setPrixUnitaire(BigDecimal.valueOf(2.80));
+                carottes.setPrixUnitaire(new BigDecimal("2.80"));
                 carottes.setUniteMesure("kg");
                 carottes.setAgriculteur(agriculteurs.get(2));
                 carottes.setCategorie(categories.get(0));
