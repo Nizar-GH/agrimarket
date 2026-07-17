@@ -32,8 +32,14 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Charger les données uniquement si la base est vide
-        if (produitRepository.count() == 0) {
+        // Compter les produits avec images
+        long produitsAvecImages = produitRepository.findAll().stream()
+            .filter(p -> p.getImageUrl() != null && !p.getImageUrl().isEmpty())
+            .count();
+        
+        // Charger les données si pas de produits ou si images manquent
+        if (produitsAvecImages == 0) {
+            produitRepository.deleteAll();
             loadSaisons();
             loadCategories();
             loadAgriculteurs();
