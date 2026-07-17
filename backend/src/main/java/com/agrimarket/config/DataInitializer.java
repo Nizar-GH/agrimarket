@@ -32,13 +32,11 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Compter les produits avec images
-        long produitsAvecImages = produitRepository.findAll().stream()
-            .filter(p -> p.getImageUrl() != null && !p.getImageUrl().isEmpty())
-            .count();
-        
-        // Charger les données si pas de produits ou si images manquent
-        if (produitsAvecImages == 0) {
+        // Recharger si les images pointent encore vers unsplash (anciennes données)
+        boolean hasUnsplashImages = produitRepository.findAll().stream()
+            .anyMatch(p -> p.getImageUrl() != null && p.getImageUrl().contains("unsplash"));
+
+        if (produitRepository.count() == 0 || hasUnsplashImages) {
             produitRepository.deleteAll();
             loadSaisons();
             loadCategories();
