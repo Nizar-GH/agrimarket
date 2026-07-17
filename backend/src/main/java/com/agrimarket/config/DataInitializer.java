@@ -201,7 +201,7 @@ public class DataInitializer implements CommandLineRunner {
                 tomates.setVariete("Cherry");
                 tomates.setPrixUnitaire(new BigDecimal("4.50"));
                 tomates.setUniteMesure("kg");
-                tomates.setImageUrl("https://images.unsplash.com/photo-1516169445163-66ef06d676d4?w=400&h=400&fit=crop");
+                tomates.setImageUrl("https://agrimarket1.vercel.app/images/tomatoes.svg");
                 tomates.setAgriculteur(agriculteurs.get(0));
                 tomates.setCategorie(categories.get(0));
                 tomates.setEstActif(true);
@@ -214,7 +214,7 @@ public class DataInitializer implements CommandLineRunner {
                 pommes.setVariete("Jonagold");
                 pommes.setPrixUnitaire(new BigDecimal("3.80"));
                 pommes.setUniteMesure("kg");
-                pommes.setImageUrl("https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=400&h=400&fit=crop");
+                pommes.setImageUrl("https://agrimarket1.vercel.app/images/apples.svg");
                 pommes.setAgriculteur(agriculteurs.get(3));
                 pommes.setCategorie(categories.get(1));
                 pommes.setEstActif(true);
@@ -227,7 +227,7 @@ public class DataInitializer implements CommandLineRunner {
                 laitue.setVariete("Feuille de Chêne");
                 laitue.setPrixUnitaire(new BigDecimal("2.50"));
                 laitue.setUniteMesure("pièce");
-                laitue.setImageUrl("https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=400&fit=crop");
+                laitue.setImageUrl("https://agrimarket1.vercel.app/images/lettuce.svg");
                 laitue.setAgriculteur(agriculteurs.get(0));
                 laitue.setCategorie(categories.get(0));
                 laitue.setEstActif(true);
@@ -240,7 +240,7 @@ public class DataInitializer implements CommandLineRunner {
                 menthe.setVariete("Menthe Poivrée");
                 menthe.setPrixUnitaire(new BigDecimal("3.00"));
                 menthe.setUniteMesure("bottes");
-                menthe.setImageUrl("https://images.unsplash.com/photo-1599599810694-b5ac4dd64b11?w=400&h=400&fit=crop");
+                menthe.setImageUrl("https://agrimarket1.vercel.app/images/herbs.svg");
                 menthe.setAgriculteur(agriculteurs.get(1));
                 menthe.setCategorie(categories.get(2));
                 menthe.setEstActif(true);
@@ -253,7 +253,7 @@ public class DataInitializer implements CommandLineRunner {
                 fraises.setVariete("Gariguette");
                 fraises.setPrixUnitaire(new BigDecimal("6.50"));
                 fraises.setUniteMesure("kg");
-                fraises.setImageUrl("https://images.unsplash.com/photo-1585069033036-6a7a9ad5820d?w=400&h=400&fit=crop");
+                fraises.setImageUrl("https://agrimarket1.vercel.app/images/strawberries.svg");
                 fraises.setAgriculteur(agriculteurs.get(1));
                 fraises.setCategorie(categories.get(1));
                 fraises.setEstActif(true);
@@ -266,7 +266,7 @@ public class DataInitializer implements CommandLineRunner {
                 carottes.setVariete("Nantaise");
                 carottes.setPrixUnitaire(new BigDecimal("2.80"));
                 carottes.setUniteMesure("kg");
-                carottes.setImageUrl("https://images.unsplash.com/photo-1599599810694-b5ac4dd64b11?w=400&h=400&fit=crop");
+                carottes.setImageUrl("https://agrimarket1.vercel.app/images/carrots.svg");
                 carottes.setAgriculteur(agriculteurs.get(2));
                 carottes.setCategorie(categories.get(0));
                 carottes.setEstActif(true);

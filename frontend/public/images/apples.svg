@@ -1,0 +1,10 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#f5f5f5"/>
+  <circle cx="200" cy="200" r="100" fill="#e74c3c"/>
+  <circle cx="200" cy="200" r="90" fill="#c0392b"/>
+  <ellipse cx="170" cy="170" rx="30" ry="35" fill="#d35400"/>
+  <ellipse cx="230" cy="170" rx="30" ry="35" fill="#d35400"/>
+  <path d="M 200 80 Q 190 70 185 50 Q 200 60 215 50 Q 210 70 200 80" fill="#27ae60"/>
+  <line x1="200" y1="80" x2="200" y2="55" stroke="#27ae60" stroke-width="3"/>
+  <text x="200" y="350" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">Pommes</text>
+</svg>

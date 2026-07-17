@@ -1,0 +1,9 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#f5f5f5"/>
+  <circle cx="200" cy="220" r="120" fill="#e74c3c"/>
+  <circle cx="160" cy="200" r="110" fill="#e74c3c"/>
+  <circle cx="240" cy="200" r="110" fill="#e74c3c"/>
+  <ellipse cx="200" cy="100" rx="40" ry="50" fill="#27ae60"/>
+  <path d="M 200 100 Q 180 80 170 60" stroke="#27ae60" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <text x="200" y="350" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">Tomates</text>
+</svg>

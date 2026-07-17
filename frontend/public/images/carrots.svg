@@ -1,0 +1,17 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#f5f5f5"/>
+  <path d="M 200 120 Q 180 160 175 220 Q 175 270 200 290 Q 225 270 225 220 Q 220 160 200 120" fill="#e67e22"/>
+  <circle cx="190" cy="140" r="6" fill="#d35400"/>
+  <circle cx="200" cy="135" r="6" fill="#d35400"/>
+  <circle cx="210" cy="140" r="6" fill="#d35400"/>
+  <circle cx="185" cy="170" r="6" fill="#d35400"/>
+  <circle cx="200" cy="165" r="6" fill="#d35400"/>
+  <circle cx="215" cy="170" r="6" fill="#d35400"/>
+  <circle cx="180" cy="210" r="6" fill="#d35400"/>
+  <circle cx="200" cy="205" r="6" fill="#d35400"/>
+  <circle cx="220" cy="210" r="6" fill="#d35400"/>
+  <path d="M 185 115 L 170 80 L 175 90 M 200 110 L 200 60 L 205 70 M 215 115 L 230 80 L 225 90" stroke="#27ae60" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 190 110 L 175 75" stroke="#27ae60" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 210 110 L 225 75" stroke="#27ae60" stroke-width="5" stroke-linecap="round"/>
+  <text x="200" y="350" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">Carottes</text>
+</svg>

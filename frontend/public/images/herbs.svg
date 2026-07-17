@@ -1,0 +1,14 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#f5f5f5"/>
+  <ellipse cx="200" cy="180" rx="50" ry="70" fill="#27ae60"/>
+  <path d="M 200 180 Q 170 150 150 120" stroke="#27ae60" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 200 180 Q 230 150 250 120" stroke="#27ae60" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 200 180 Q 180 140 160 100" stroke="#27ae60" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 200 180 Q 220 140 240 100" stroke="#27ae60" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <circle cx="150" cy="100" r="12" fill="#27ae60"/>
+  <circle cx="250" cy="100" r="12" fill="#27ae60"/>
+  <circle cx="160" cy="110" r="10" fill="#27ae60"/>
+  <circle cx="240" cy="110" r="10" fill="#27ae60"/>
+  <ellipse cx="200" cy="240" rx="35" ry="25" fill="#27ae60"/>
+  <text x="200" y="350" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">Menthe</text>
+</svg>
