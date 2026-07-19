@@ -51,7 +51,7 @@ public class DataInitializer implements CommandLineRunner {
 
         for (Produit produit : produits) {
             String nom = produit.getNomProduit();
-            if (nom == null) {
+            if (nom == null || hasCustomImage(produit.getImageUrl())) {
                 continue;
             }
 
@@ -80,6 +80,10 @@ public class DataInitializer implements CommandLineRunner {
             produitRepository.saveAll(produits);
             System.out.println("✅ URLs images produits mises à jour.");
         }
+    }
+
+    private boolean hasCustomImage(String imageUrl) {
+        return imageUrl != null && !imageUrl.isBlank();
     }
 
     private void loadSaisons() {

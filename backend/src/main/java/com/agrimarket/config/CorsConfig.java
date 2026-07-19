@@ -15,14 +15,8 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://localhost:5175",
-            "http://localhost:5176",
-            "http://localhost:5177",
-            "http://localhost:3000",
-            "https://agrimarket1.vercel.app",
+        config.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:*",
             "https://*.vercel.app"
         ));
         config.setAllowedHeaders(Arrays.asList("*"));
