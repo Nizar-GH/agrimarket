@@ -55,7 +55,7 @@ export default function Dashboard() {
   const emptyColSpan = activeSection === 'frontend'
     ? 7
     : activeSection === 'produits'
-      ? 7
+      ? 9
       : activeSection === 'clients'
         ? 8
         : activeSection === 'commandes'
@@ -365,6 +365,8 @@ export default function Dashboard() {
                       <>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producteur</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bio</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Saison</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prix</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unité</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
@@ -455,6 +457,14 @@ export default function Dashboard() {
                             <td className="px-6 py-4">{item.nomProduit}</td>
                             <td className="px-6 py-4">
                               {item.agriculteur ? `${item.agriculteur.nom} ${item.agriculteur.prenom}` : '-'}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.estBio ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                                {item.estBio ? 'Bio' : 'Non bio'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              {item.saison?.nomSaison || '-'}
                             </td>
                             <td className="px-6 py-4">{item.prixUnitaire?.toFixed(2)} €</td>
                             <td className="px-6 py-4">{item.uniteMesure}</td>
@@ -995,6 +1005,15 @@ function FormModal({ section, item, onClose, onSave }: any) {
                   onChange={(e) => setFormData({ ...formData, estActif: e.target.checked })}
                 />
                 <span>Actif</span>
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.estBio === true}
+                  onChange={(e) => setFormData({ ...formData, estBio: e.target.checked })}
+                />
+                <span>Produit Bio</span>
               </label>
 
               <div className="grid grid-cols-2 gap-4">

@@ -992,6 +992,18 @@ function AppContent() {
                           <span className="text-[#006851] text-xs font-bold">-15%</span>
                         </div>
                       )}
+                      <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10">
+                        {produit.estBio && (
+                          <span className="rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-green-700 shadow-sm">
+                            🌿 Bio
+                          </span>
+                        )}
+                        {produit.saison?.nomSaison && (
+                          <span className="rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#006851] shadow-sm">
+                            {produit.saison.nomSaison}
+                          </span>
+                        )}
+                      </div>
                       <div className="w-full h-full relative">
                         <img
                           src={produit.imageUrl}
@@ -1005,6 +1017,18 @@ function AppContent() {
                       </div>
                     </div>
                     <h4 className="font-bold text-sm text-[#00362e] mb-2 truncate">{produit.nomProduit}</h4>
+                    <div className="mb-2 flex flex-wrap gap-1">
+                      {produit.estBio ? (
+                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">Bio</span>
+                      ) : (
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">Non bio</span>
+                      )}
+                      {produit.saison?.nomSaison && (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                          {produit.saison.nomSaison}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center justify-between">
                       <p className="font-bold text-[#006851]">
                         {produit.prixUnitaire?.toFixed(2)} € <span className="text-xs text-[#7fb8ac]">/{produit.uniteMesure}</span>
@@ -1118,6 +1142,8 @@ function AppContent() {
 
                 <div className="flex flex-wrap gap-2">
                   {selectedProduit.estBio && <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">🌿 Bio</span>}
+                  {!selectedProduit.estBio && <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">Non bio</span>}
+                  {selectedProduit.saison?.nomSaison && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">🗓 {selectedProduit.saison.nomSaison}</span>}
                   {selectedProduit.estLocal && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">📍 Local</span>}
                   {selectedProduit.estNouveau && <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">✨ Nouveau</span>}
                 </div>
