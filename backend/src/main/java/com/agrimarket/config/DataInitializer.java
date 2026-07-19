@@ -32,19 +32,53 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Recharger si les images pointent encore vers unsplash ou vercel/svg (anciennes données)
-        boolean hasOldImages = produitRepository.findAll().stream()
-            .anyMatch(p -> p.getImageUrl() == null
-                || p.getImageUrl().contains("unsplash")
-                || p.getImageUrl().contains(".svg"));
+        loadSaisons();
+        loadCategories();
+        loadAgriculteurs();
 
-        if (produitRepository.count() == 0 || hasOldImages) {
-            produitRepository.deleteAll();
-            loadSaisons();
-            loadCategories();
-            loadAgriculteurs();
+        if (produitRepository.count() == 0) {
             loadProduits();
             System.out.println("✅ Données de démonstration chargées avec succès!");
+            return;
+        }
+
+        updateExistingProductImages();
+    }
+
+    private void updateExistingProductImages() {
+        List<Produit> produits = produitRepository.findAll();
+        boolean updated = false;
+
+        for (Produit produit : produits) {
+            String nom = produit.getNomProduit();
+            if (nom == null) {
+                continue;
+            }
+
+            if (nom.contains("Tomates")) {
+                produit.setImageUrl("https://picsum.photos/seed/tomatoes/400/400");
+                updated = true;
+            } else if (nom.contains("Pommes")) {
+                produit.setImageUrl("https://picsum.photos/seed/pommes/400/400");
+                updated = true;
+            } else if (nom.contains("Laitue")) {
+                produit.setImageUrl("https://picsum.photos/seed/laitue/400/400");
+                updated = true;
+            } else if (nom.contains("Menthe")) {
+                produit.setImageUrl("https://picsum.photos/seed/menthe/400/400");
+                updated = true;
+            } else if (nom.contains("Fraises")) {
+                produit.setImageUrl("https://picsum.photos/seed/fraises/400/400");
+                updated = true;
+            } else if (nom.contains("Carottes")) {
+                produit.setImageUrl("https://picsum.photos/seed/carottes/400/400");
+                updated = true;
+            }
+        }
+
+        if (updated) {
+            produitRepository.saveAll(produits);
+            System.out.println("✅ URLs images produits mises à jour.");
         }
     }
 
