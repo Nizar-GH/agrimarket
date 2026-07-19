@@ -90,6 +90,7 @@ function AppContent() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categorieActive, setCategorieActive] = useState<number | null>(null);
+  const [bioFilter, setBioFilter] = useState<'all' | 'bio' | 'nonbio'>('all');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [openVilles, setOpenVilles] = useState(false);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -666,7 +667,10 @@ function AppContent() {
     const matchSearch = p.nomProduit.toLowerCase().includes(searchQuery.toLowerCase());
     const matchCategorie = categorieActive === null || p.categorie?.id === categorieActive;
     const matchCity = selectedCity === null || p.agriculteur?.ville === selectedCity;
-    return matchSearch && matchCategorie && matchCity;
+    const matchBio = bioFilter === 'all'
+      || (bioFilter === 'bio' && p.estBio)
+      || (bioFilter === 'nonbio' && !p.estBio);
+    return matchSearch && matchCategorie && matchCity && matchBio;
   });
 
   const selectedProduitCategorie = selectedProduit?.categorie;
@@ -970,6 +974,29 @@ function AppContent() {
             <div className="bg-[rgba(0,104,81,0.1)] px-3 py-1 rounded-full">
               <span className="text-[#006851] text-xs font-bold uppercase tracking-wider">Frais</span>
             </div>
+          </div>
+          <div className="mb-5 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setBioFilter('all')}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'all' ? 'bg-[#006851] text-white' : 'bg-white text-[#006851] border border-[#d6fff5] hover:bg-[#f2fffb]'}`}
+            >
+              Tous
+            </button>
+            <button
+              type="button"
+              onClick={() => setBioFilter('bio')}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'bio' ? 'bg-green-600 text-white' : 'bg-white text-green-700 border border-green-100 hover:bg-green-50'}`}
+            >
+              🌿 Bio
+            </button>
+            <button
+              type="button"
+              onClick={() => setBioFilter('nonbio')}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'nonbio' ? 'bg-gray-700 text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'}`}
+            >
+              Non bio
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {loading
