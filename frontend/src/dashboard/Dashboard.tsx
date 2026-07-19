@@ -681,6 +681,101 @@ function FormModal({ section, item, onClose, onSave }: any) {
   const [agriculteurs, setAgriculteurs] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [saisons, setSaisons] = useState<any[]>([]);
+  const [isCompressingImage, setIsCompressingImage] = useState(false);
+  const [imageError, setImageError] = useState('');
+
+  const MAX_IMAGE_DIMENSION = 1200;
+  const MAX_IMAGE_SIZE_BYTES = 350 * 1024;
+
+  const compressProductImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const image = new Image();
+
+        image.onload = () => {
+          const canvas = document.createElement('canvas');
+          let { width, height } = image;
+
+          if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+            const ratio = Math.min(MAX_IMAGE_DIMENSION / width, MAX_IMAGE_DIMENSION / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const context = canvas.getContext('2d');
+          if (!context) {
+            reject(new Error('Impossible de compresser l\'image (canvas indisponible).'));
+            return;
+          }
+
+          context.drawImage(image, 0, 0, width, height);
+
+          let quality = 0.85;
+          let dataUrl = canvas.toDataURL('image/webp', quality);
+
+          while (dataUrl.length > MAX_IMAGE_SIZE_BYTES * 1.37 && quality > 0.45) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL('image/webp', quality);
+          }
+
+          if (dataUrl.length > MAX_IMAGE_SIZE_BYTES * 1.37) {
+            quality = 0.82;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+            while (dataUrl.length > MAX_IMAGE_SIZE_BYTES * 1.37 && quality > 0.45) {
+              quality -= 0.1;
+              dataUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+          }
+
+          resolve(dataUrl);
+        };
+
+        image.onerror = () => reject(new Error('Le fichier image est invalide.'));
+        image.src = String(reader.result);
+      };
+
+      reader.onerror = () => reject(new Error('Impossible de lire le fichier image.'));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleProductImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setImageError('Fichier invalide: sélectionne une image.');
+      event.target.value = '';
+      return;
+    }
+
+    setImageError('');
+    setIsCompressingImage(true);
+    try {
+      const compressedDataUrl = await compressProductImage(file);
+      setFormData((current: any) => ({ ...current, imageUrl: compressedDataUrl }));
+    } catch (error: any) {
+      setImageError(error?.message || 'Erreur lors de la compression de l\'image.');
+    } finally {
+      setIsCompressingImage(false);
+      event.target.value = '';
+    }
+  };
+
+  const getDataUrlSizeKb = (dataUrl?: string) => {
+    if (!dataUrl || !dataUrl.startsWith('data:')) {
+      return null;
+    }
+    const base64 = dataUrl.split(',')[1] || '';
+    const bytes = Math.ceil((base64.length * 3) / 4);
+    return Math.round(bytes / 1024);
+  };
 
   useEffect(() => {
     setFormData(item || {});
@@ -742,6 +837,11 @@ function FormModal({ section, item, onClose, onSave }: any) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (section === 'produits' && isCompressingImage) {
+      alert('Compression en cours, attends la fin avant de sauvegarder.');
+      return;
+    }
 
     const payload = { ...formData };
     if (section === 'frontend') {
@@ -808,6 +908,53 @@ function FormModal({ section, item, onClose, onSave }: any) {
                 onChange={(e) => setFormData({ ...formData, uniteMesure: e.target.value })}
                 className="w-full px-4 py-2 border rounded-lg"
               />
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium mb-1">Image produit</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProductImageUpload}
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+                <input
+                  type="url"
+                  placeholder="Ou colle une URL d'image"
+                  value={formData.imageUrl || ''}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+                <p className="text-xs text-gray-500">
+                  Les images uploadées sont compressées automatiquement avant l'enregistrement en base.
+                </p>
+                {isCompressingImage && (
+                  <p className="text-sm text-emerald-700">Compression en cours...</p>
+                )}
+                {imageError && (
+                  <p className="text-sm text-red-600">{imageError}</p>
+                )}
+                {formData.imageUrl && (
+                  <div className="mt-2 border rounded-lg p-3 bg-gray-50">
+                    <img
+                      src={formData.imageUrl}
+                      alt="Aperçu produit"
+                      className="h-36 w-36 object-cover rounded-lg border"
+                    />
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <span className="text-xs text-gray-600">
+                        Taille estimée: {getDataUrlSizeKb(formData.imageUrl) ? `${getDataUrlSizeKb(formData.imageUrl)} KB` : 'URL externe'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                        className="text-xs px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                      >
+                        Retirer l'image
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1">Catégorie</label>
