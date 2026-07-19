@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [productStocks, setProductStocks] = useState<Record<number, Stock>>({});
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [bioFilter, setBioFilter] = useState<'all' | 'bio' | 'nonbio'>('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -67,6 +68,7 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
     setSearch('');
+    setBioFilter('all');
   }, [activeSection]);
 
   useEffect(() => {
@@ -222,9 +224,8 @@ export default function Dashboard() {
   };
 
   const dateFiltree = (data as any[]).filter(item => {
-    if (!search) return true;
     const s = search.toLowerCase();
-    return (
+    const matchSearch = !search || (
       item.nomProduit?.toLowerCase().includes(s) ||
       item.agriculteur?.nom?.toLowerCase().includes(s) ||
       item.agriculteur?.prenom?.toLowerCase().includes(s) ||
@@ -244,6 +245,13 @@ export default function Dashboard() {
       item.highlightText?.toLowerCase().includes(s) ||
       item.description?.toLowerCase().includes(s)
     );
+
+    const matchBio = activeSection !== 'produits'
+      || bioFilter === 'all'
+      || (bioFilter === 'bio' && item.estBio)
+      || (bioFilter === 'nonbio' && !item.estBio);
+
+    return matchSearch && matchBio;
   });
 
   const handleReapprovisionner = async (stockId: number) => {
@@ -342,6 +350,31 @@ export default function Dashboard() {
                 onChange={e => setSearch(e.target.value)}
                 className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#006851] w-48"
               />
+              {activeSection === 'produits' && (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBioFilter('all')}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'all' ? 'bg-[#006851] text-white' : 'bg-white text-[#006851] border border-[#d6fff5] hover:bg-[#f2fffb]'}`}
+                  >
+                    Tous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBioFilter('bio')}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'bio' ? 'bg-green-600 text-white' : 'bg-white text-green-700 border border-green-100 hover:bg-green-50'}`}
+                  >
+                    🌿 Bio
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBioFilter('nonbio')}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'nonbio' ? 'bg-gray-700 text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'}`}
+                  >
+                    Non bio
+                  </button>
+                </div>
+              )}
               {!['commandes', 'stocks'].includes(activeSection) && (
                 <button
                   onClick={() => { setEditItem(null); setModalOpen(true); }}
