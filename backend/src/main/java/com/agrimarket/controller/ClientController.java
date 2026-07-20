@@ -2,6 +2,8 @@ package com.agrimarket.controller;
 
 import com.agrimarket.model.Client;
 import com.agrimarket.repository.ClientRepository;
+import com.agrimarket.service.ReCaptchaService;
+import com.agrimarket.dto.ClientCreateWithCaptchaDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +15,11 @@ import java.util.List;
 public class ClientController {
 
     private final ClientRepository clientRepository;
+    private final ReCaptchaService reCaptchaService;
 
-    public ClientController(ClientRepository clientRepository) {
+    public ClientController(ClientRepository clientRepository, ReCaptchaService reCaptchaService) {
         this.clientRepository = clientRepository;
+        this.reCaptchaService = reCaptchaService;
     }
 
     @GetMapping
@@ -31,18 +35,41 @@ public class ClientController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createClient(@RequestBody Client client) {
-        if (client.getEmail() == null || client.getEmail().trim().isEmpty()) {
+    public ResponseEntity<?> createClient(@RequestBody ClientCreateWithCaptchaDto clientDto) {
+        // Valider le token reCAPTCHA
+        if (clientDto.getRecaptchaToken() == null || clientDto.getRecaptchaToken().trim().isEmpty()) {
+            return ResponseEntity.status(400).body("Token reCAPTCHA requis");
+        }
+
+        if (!reCaptchaService.validateToken(clientDto.getRecaptchaToken())) {
+            return ResponseEntity.status(403).body("Validation reCAPTCHA échouée. Vous semblez être un robot.");
+        }
+
+        // Valider l'email
+        if (clientDto.getEmail() == null || clientDto.getEmail().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Email requis");
         }
 
-        if (clientRepository.existsByEmailIgnoreCase(client.getEmail().trim())) {
+        if (clientRepository.existsByEmailIgnoreCase(clientDto.getEmail().trim())) {
             return ResponseEntity.status(409).body("Email déjà utilisé");
         }
 
-        client.setEmail(client.getEmail().trim().toLowerCase());
-        if (client.getEstActif() == null) {
+        // Créer le client à partir du DTO
+        Client client = new Client();
+        client.setNom(clientDto.getNom());
+        client.setPrenom(clientDto.getPrenom());
+        client.setGenre(clientDto.getGenre());
+        client.setEmail(clientDto.getEmail().trim().toLowerCase());
+        client.setTelephone(clientDto.getTelephone());
+        client.setAdresseLivraison(clientDto.getAdresseLivraison());
+        client.setCodePostal(clientDto.getCodePostal());
+        client.setVille(clientDto.getVille());
+        client.setImageProfil(clientDto.getImageProfil());
+        
+        if (clientDto.getEstActif() == null) {
             client.setEstActif(true);
+        } else {
+            client.setEstActif(clientDto.getEstActif());
         }
 
         Client created = clientRepository.save(client);

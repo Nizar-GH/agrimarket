@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Search, Home, Heart, User, MapPin, Calendar, ArrowRight, X, Star, Plus } from 'lucide-react';
+import { ShoppingCart, Search, Home, Heart, User, MapPin, Calendar, ArrowRight, X, Star, Plus, Shield } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import { produitsApi, categoriesApi, agriculteursApi, frontendApi, stocksApi, clientsApi, commandesApi } from '../services/api';
 import { usePanier } from '../components/Panier';
+import { useReCaptcha } from '../components/ReCaptchaWrapper';
 import PanierModal from '../components/Panier';
 import type { Produit, Categorie, Agriculteur, FrontendSetting, Stock, Commande } from '../services/types';
 import { ICONES_CATEGORIES } from '../services/constants';
@@ -86,6 +87,7 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [panierOpen, setPanierOpen] = useState(false);
   const { ajouterAuPanier, items } = usePanier();
+  const { getRecaptchaToken } = useReCaptcha();
   const location = useLocation();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -583,6 +585,13 @@ function AppContent() {
       };
 
       try {
+        // Obtenir le token reCAPTCHA pour la validation
+        const recaptchaToken = await getRecaptchaToken('signup');
+        if (!recaptchaToken) {
+          setProfileMessage('Erreur de validation reCAPTCHA. Réessaie.');
+          return;
+        }
+
         const createdClientResponse = await clientsApi.create({
           nom: newUser.nom,
           prenom: newUser.prenom,
@@ -594,6 +603,7 @@ function AppContent() {
           ville: newUser.ville,
           imageProfil: newUser.imageProfil,
           estActif: true,
+          recaptchaToken: recaptchaToken,
         });
 
         const createdClient = createdClientResponse?.data;
@@ -610,6 +620,10 @@ function AppContent() {
         const status = error?.response?.status;
         if (status === 409 || status === 400) {
           setProfileMessage('Cet email existe déjà. Connecte-toi avec ce compte.');
+          return;
+        }
+        if (status === 403) {
+          setProfileMessage('La validation reCAPTCHA a échoué. Tu sembles être un robot. Réessaie.');
           return;
         }
         setProfileMessage('Erreur lors de la création du compte. Réessaie.');
@@ -1477,6 +1491,13 @@ function AppContent() {
                 <p className="rounded-2xl bg-[#f1fbf7] px-4 py-3 text-sm text-[#006851]">
                   {profileMessage}
                 </p>
+              )}
+
+              {profileMode === 'register' && (
+                <div className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-2 border border-blue-100">
+                  <Shield className="w-4 h-4 text-blue-600" />
+                  <span className="text-xs font-medium text-blue-700">Protégé par reCAPTCHA</span>
+                </div>
               )}
 
               <button
