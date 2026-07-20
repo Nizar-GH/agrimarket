@@ -169,8 +169,9 @@ export default function ImageUpload({
 
       {/* Info Text */}
       <p className="text-xs text-gray-600">
-        Formats acceptés: JPG, PNG, GIF, WebP • Taille max: 10MB
+        💾 Images stockées en base de données (base64) • Formats: JPG, PNG, GIF, WebP • Taille max: 10MB
       </p>
     </div>
   );
 }
+
