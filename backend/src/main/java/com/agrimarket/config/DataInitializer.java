@@ -18,15 +18,18 @@ public class DataInitializer implements CommandLineRunner {
     private final CategorieRepository categorieRepository;
     private final AgriculteurRepository agriculteurRepository;
     private final ProduitRepository produitRepository;
+    private final FrontendSettingRepository frontendSettingRepository;
 
     public DataInitializer(SaisonRepository saisonRepository,
                           CategorieRepository categorieRepository,
                           AgriculteurRepository agriculteurRepository,
-                          ProduitRepository produitRepository) {
+                          ProduitRepository produitRepository,
+                          FrontendSettingRepository frontendSettingRepository) {
         this.saisonRepository = saisonRepository;
         this.categorieRepository = categorieRepository;
         this.agriculteurRepository = agriculteurRepository;
         this.produitRepository = produitRepository;
+        this.frontendSettingRepository = frontendSettingRepository;
     }
 
     @Override
@@ -35,6 +38,7 @@ public class DataInitializer implements CommandLineRunner {
         loadSaisons();
         loadCategories();
         loadAgriculteurs();
+        loadFrontendSettings();
 
         if (produitRepository.count() == 0) {
             loadProduits();
@@ -224,6 +228,32 @@ public class DataInitializer implements CommandLineRunner {
             jean.setDateInscription(LocalDateTime.now());
             agriculteurRepository.save(jean);
         }
+    }
+
+    private void loadFrontendSettings() {
+        frontendSettingRepository.findBySection("special-offer").ifPresentOrElse(existing -> {
+            existing.setTitle("Offre Spéciale");
+            existing.setHighlightText("-30% sur les Tomates");
+            existing.setDescription("Récoltées ce matin dans nos serres locales.");
+            existing.setLinkUrl("/?search=Tomates");
+            existing.setButtonLabel("Voir les tomates");
+            existing.setGradientFrom("#10b981");
+            existing.setGradientTo("#047857");
+            existing.setEstActif(true);
+            frontendSettingRepository.save(existing);
+        }, () -> {
+            FrontendSetting setting = new FrontendSetting();
+            setting.setSection("special-offer");
+            setting.setTitle("Offre Spéciale");
+            setting.setHighlightText("-30% sur les Tomates");
+            setting.setDescription("Récoltées ce matin dans nos serres locales.");
+            setting.setLinkUrl("/?search=Tomates");
+            setting.setButtonLabel("Voir les tomates");
+            setting.setGradientFrom("#10b981");
+            setting.setGradientTo("#047857");
+            setting.setEstActif(true);
+            frontendSettingRepository.save(setting);
+        });
     }
 
     private void loadProduits() {
