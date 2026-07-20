@@ -5,12 +5,17 @@ import com.agrimarket.dto.ProduitResponseDto;
 import com.agrimarket.dto.ProduitUpdateDto;
 import com.agrimarket.model.Produit;
 import com.agrimarket.service.ProduitService;
+import com.agrimarket.service.FileStorageService;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/produits")
@@ -18,9 +23,11 @@ import java.util.List;
 public class ProduitController {
 
     private final ProduitService produitService;
+    private final FileStorageService fileStorageService;
 
-    public ProduitController(ProduitService produitService) {
+    public ProduitController(ProduitService produitService, FileStorageService fileStorageService) {
         this.produitService = produitService;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping
@@ -53,5 +60,31 @@ public class ProduitController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/{id}/upload-image")
+    public ResponseEntity<Map<String, String>> uploadProductImage(
+            @PathVariable Long id,
+            @RequestParam("image") MultipartFile file) {
+        try {
+            // Upload file
+            String imageUrl = fileStorageService.uploadFile(file);
+            
+            // Update product with new image URL
+            produitService.updateProductImage(id, imageUrl);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("imageUrl", imageUrl);
+            response.put("message", "Image uploaded successfully");
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to upload image: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 }

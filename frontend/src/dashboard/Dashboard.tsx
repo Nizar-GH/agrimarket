@@ -10,6 +10,7 @@ import {
 } from '../services/api';
 import type { Produit, Agriculteur, Client, Commande, Categorie, Saison, Stock, FrontendSetting } from '../services/types';
 import { ICONES_CATEGORIES } from '../services/constants';
+import ImageUpload from '../components/ImageUpload';
 
 type Section = 'produits' | 'agriculteurs' | 'clients' | 'commandes' | 'categories' | 'saisons' | 'stocks' | 'frontend';
 
@@ -32,10 +33,10 @@ const COMMANDE_STATUT_LABELS: Record<Commande['statut'], string> = {
 };
 
 const getCommandeStatutBadgeClass = (statut: Commande['statut']) => {
-  if (statut === 'LIVREE') return 'bg-green-100 text-green-800';
-  if (statut === 'CONFIRMEE' || statut === 'EN_PREPARATION' || statut === 'EXPEDIEE') return 'bg-blue-100 text-blue-800';
-  if (statut === 'ANNULEE') return 'bg-red-100 text-red-800';
-  return 'bg-yellow-100 text-yellow-800';
+  if (statut === 'LIVREE') return 'bg-green-100 text-green-800 ring-green-200';
+  if (statut === 'CONFIRMEE' || statut === 'EN_PREPARATION' || statut === 'EXPEDIEE') return 'bg-blue-100 text-blue-800 ring-blue-200';
+  if (statut === 'ANNULEE') return 'bg-red-100 text-red-800 ring-red-200';
+  return 'bg-yellow-100 text-yellow-800 ring-yellow-200';
 };
 
 export default function Dashboard() {
@@ -342,34 +343,34 @@ export default function Dashboard() {
         <div className="p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold text-gray-800 capitalize">{activeSection === 'frontend' ? 'Pages' : activeSection}</h2>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap justify-end">
               <input
                 type="text"
                 placeholder="Rechercher..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#006851] w-48"
+                className="w-56 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[#006851]"
               />
               {activeSection === 'produits' && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 rounded-full bg-gray-50 p-1.5 shadow-inner">
                   <button
                     type="button"
                     onClick={() => setBioFilter('all')}
-                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'all' ? 'bg-[#006851] text-white' : 'bg-white text-[#006851] border border-[#d6fff5] hover:bg-[#f2fffb]'}`}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${bioFilter === 'all' ? 'bg-[#006851] text-white shadow-sm' : 'bg-white text-[#006851] ring-1 ring-inset ring-[#d6fff5] hover:bg-[#f2fffb]'}`}
                   >
                     Tous
                   </button>
                   <button
                     type="button"
                     onClick={() => setBioFilter('bio')}
-                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'bio' ? 'bg-green-600 text-white' : 'bg-white text-green-700 border border-green-100 hover:bg-green-50'}`}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${bioFilter === 'bio' ? 'bg-green-600 text-white shadow-sm' : 'bg-white text-green-700 ring-1 ring-inset ring-green-100 hover:bg-green-50'}`}
                   >
                     🌿 Bio
                   </button>
                   <button
                     type="button"
                     onClick={() => setBioFilter('nonbio')}
-                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${bioFilter === 'nonbio' ? 'bg-gray-700 text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'}`}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${bioFilter === 'nonbio' ? 'bg-gray-700 text-white shadow-sm' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-200 hover:bg-gray-50'}`}
                   >
                     Non bio
                   </button>
@@ -484,20 +485,26 @@ export default function Dashboard() {
                     </tr>
                   ) : (
                     dateFiltree.map((item: any) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
+                      <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                         {activeSection === 'produits' && (
                           <>
-                            <td className="px-6 py-4">{item.nomProduit}</td>
+                            <td className="px-6 py-4 font-medium text-gray-800">{item.nomProduit}</td>
                             <td className="px-6 py-4">
                               {item.agriculteur ? `${item.agriculteur.nom} ${item.agriculteur.prenom}` : '-'}
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.estBio ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                                {item.estBio ? 'Bio' : 'Non bio'}
+                              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${item.estBio ? 'bg-green-100 text-green-800 ring-green-200' : 'bg-gray-100 text-gray-600 ring-gray-200'}`}>
+                                {item.estBio ? '🌿 Bio' : 'Non bio'}
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              {item.saison?.nomSaison || '-'}
+                              {item.saison?.nomSaison ? (
+                                <span className="inline-flex items-center rounded-full bg-[#006851] px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                  {item.saison.nomSaison}
+                                </span>
+                              ) : (
+                                '-'
+                              )}
                             </td>
                             <td className="px-6 py-4">{item.prixUnitaire?.toFixed(2)} €</td>
                             <td className="px-6 py-4">{item.uniteMesure}</td>
@@ -511,7 +518,7 @@ export default function Dashboard() {
                               )}
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`px-2 py-1 rounded-full text-xs ${item.estActif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.estActif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                 {item.estActif ? 'Actif' : 'Inactif'}
                               </span>
                             </td>
@@ -562,7 +569,7 @@ export default function Dashboard() {
                             <td className="px-6 py-4 min-w-[180px]">{item.nom} {item.prenom}</td>
                             <td className="px-6 py-4 min-w-[220px]">{item.email}</td>
                             <td className="px-6 py-4 min-w-[120px]">
-                              <span className="inline-flex px-2 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                              <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200">
                                 {item.genre || 'Non renseigné'}
                               </span>
                             </td>
@@ -597,7 +604,7 @@ export default function Dashboard() {
                             <td className="px-6 py-4">{item.total?.toFixed(2)} €</td>
                             <td className="px-6 py-4">
                               <div className="space-y-2 min-w-[170px]">
-                                <span className={`inline-flex px-2 py-1 rounded-full text-xs ${getCommandeStatutBadgeClass(item.statut)}`}>
+                                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${getCommandeStatutBadgeClass(item.statut)}`}>
                                   {COMMANDE_STATUT_LABELS[item.statut as Commande['statut']] || item.statut}
                                 </span>
                                 <select
@@ -629,7 +636,7 @@ export default function Dashboard() {
                             <td className="px-6 py-4">{item.libelle}</td>
                             <td className="px-6 py-4">{item.description || '-'}</td>
                             <td className="px-6 py-4">
-                              <span className={`px-2 py-1 rounded-full text-xs ${item.estActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${item.estActive ? 'bg-green-100 text-green-800 ring-green-200' : 'bg-red-100 text-red-800 ring-red-200'}`}>
                                 {item.estActive ? 'Active' : 'Inactive'}
                               </span>
                             </td>
@@ -666,15 +673,15 @@ export default function Dashboard() {
                           <>
                             <td className="px-6 py-4">{item.produit?.nomProduit || 'N/A'}</td>
                             <td className="px-6 py-4">
-                              <span className={item.quantiteDisponible <= item.seuilAlerte ? 'text-red-600 font-semibold' : ''}>
-                                {item.quantiteDisponible}
+                              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${item.quantiteDisponible <= item.seuilAlerte ? 'bg-red-100 text-red-800 ring-red-200' : 'bg-emerald-100 text-emerald-800 ring-emerald-200'}`}>
+                                {item.quantiteDisponible} dispo
                               </span>
                             </td>
                             <td className="px-6 py-4">{item.seuilAlerte}</td>
                             <td className="px-6 py-4">
                               <button
                                 onClick={() => handleReapprovisionner(item.id)}
-                                className="bg-[#006851] text-white px-3 py-1 rounded text-sm hover:bg-[#005040]"
+                                className="rounded-full bg-[#006851] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#005040]"
                               >
                                 Réapprovisionner
                               </button>
@@ -998,6 +1005,23 @@ function FormModal({ section, item, onClose, onSave }: any) {
                   </div>
                 )}
               </div>
+
+              {/* File-based Image Upload System (for existing products) */}
+              {item?.id && (
+                <div className="p-4 border border-blue-200 bg-blue-50 rounded-lg">
+                  <p className="text-sm font-medium text-blue-900 mb-3">📂 Télécharger une image fichier</p>
+                  <ImageUpload
+                    productId={item.id}
+                    currentImageUrl={formData.imageUrl}
+                    onSuccess={(imageUrl) => {
+                      setFormData({ ...formData, imageUrl });
+                    }}
+                    onError={(error) => {
+                      setImageError(error);
+                    }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium mb-1">Catégorie</label>

@@ -1010,7 +1010,7 @@ function AppContent() {
               : produitsFiltres.length > 0 ? produitsFiltres.map(produit => (
                   <div
                     key={produit.id}
-                    className="bg-white rounded-[32px] p-3 shadow-sm cursor-pointer"
+                    className={`bg-white rounded-[32px] p-3 shadow-sm cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md ${produit.estBio ? 'ring-1 ring-green-100' : 'ring-1 ring-transparent'}`}
                     onClick={() => setSelectedProduit(produit)}
                   >
                     <div className="aspect-square bg-[#aff6e7] rounded-[32px] mb-3 relative overflow-hidden">
@@ -1019,14 +1019,14 @@ function AppContent() {
                           <span className="text-[#006851] text-xs font-bold">-15%</span>
                         </div>
                       )}
-                      <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10">
+                      <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10 rounded-2xl bg-white/70 p-1.5 shadow-sm backdrop-blur-md">
                         {produit.estBio && (
-                          <span className="rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-green-700 shadow-sm">
+                          <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-green-700 shadow-sm ring-1 ring-green-200">
                             🌿 Bio
                           </span>
                         )}
                         {produit.saison?.nomSaison && (
-                          <span className="rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#006851] shadow-sm">
+                          <span className="rounded-full bg-[#006851] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
                             {produit.saison.nomSaison}
                           </span>
                         )}
@@ -1044,14 +1044,14 @@ function AppContent() {
                       </div>
                     </div>
                     <h4 className="font-bold text-sm text-[#00362e] mb-2 truncate">{produit.nomProduit}</h4>
-                    <div className="mb-2 flex flex-wrap gap-1">
+                    <div className="mb-2 flex flex-wrap gap-1.5">
                       {produit.estBio ? (
-                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">Bio</span>
+                        <span className="rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-semibold text-green-700 ring-1 ring-green-200">🌿 Bio</span>
                       ) : (
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">Non bio</span>
+                        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-600 ring-1 ring-gray-200">Non bio</span>
                       )}
                       {produit.saison?.nomSaison && (
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
                           {produit.saison.nomSaison}
                         </span>
                       )}
@@ -1168,11 +1168,11 @@ function AppContent() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {selectedProduit.estBio && <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">🌿 Bio</span>}
-                  {!selectedProduit.estBio && <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">Non bio</span>}
-                  {selectedProduit.saison?.nomSaison && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">🗓 {selectedProduit.saison.nomSaison}</span>}
-                  {selectedProduit.estLocal && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">📍 Local</span>}
-                  {selectedProduit.estNouveau && <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">✨ Nouveau</span>}
+                  {selectedProduit.estBio && <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 ring-1 ring-green-200">🌿 Bio</span>}
+                  {!selectedProduit.estBio && <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 ring-1 ring-gray-200">Non bio</span>}
+                  {selectedProduit.saison?.nomSaison && <span className="rounded-full bg-[#006851] px-3 py-1 text-xs font-semibold text-white shadow-sm">🗓 {selectedProduit.saison.nomSaison}</span>}
+                  {selectedProduit.estLocal && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">📍 Local</span>}
+                  {selectedProduit.estNouveau && <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700 ring-1 ring-orange-200">✨ Nouveau</span>}
                 </div>
 
                 <div className="flex items-center justify-between rounded-[24px] bg-white px-4 py-3">

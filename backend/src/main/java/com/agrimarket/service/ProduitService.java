@@ -124,4 +124,11 @@ public class ProduitService {
             return true;
         }).orElse(false);
     }
+
+    public void updateProductImage(Long id, String imageUrl) {
+        produitRepository.findById(id).ifPresent(produit -> {
+            produit.setImageUrl(imageUrl);
+            produitRepository.save(produit);
+        });
+    }
 }
