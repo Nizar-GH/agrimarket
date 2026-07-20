@@ -21,6 +21,19 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
 
+  - type: static_site
+    name: agrimarket-frontend
+    env: static
+    region: frankfurt
+    plan: free
+    buildCommand: npm install && npm run build
+    publishDirectory: frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://agrimarket-backend.onrender.com/api"
+      - key: VITE_USE_MOCK_DATA
+        value: "false"
+
 databases:
   - name: agrimarket-db
     databaseName: agrimarket

@@ -6,13 +6,17 @@ import com.agrimarket.service.ReCaptchaService;
 import com.agrimarket.dto.ClientCreateWithCaptchaDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/clients")
 @CrossOrigin(origins = "*")
 public class ClientController {
+    private static final Logger logger = LoggerFactory.getLogger(ClientController.class);
 
     private final ClientRepository clientRepository;
     private final ReCaptchaService reCaptchaService;
@@ -24,7 +28,10 @@ public class ClientController {
 
     @GetMapping
     public List<Client> getAllClients() {
-        return clientRepository.findByEstActifTrue();
+        // Retourner tous les clients sans filtrer par estActif
+        List<Client> clients = clientRepository.findAll();
+        logger.info("GET /api/clients - Returned {} clients", clients.size());
+        return clients;
     }
 
     @GetMapping("/{id}")
@@ -36,22 +43,32 @@ public class ClientController {
 
     @PostMapping
     public ResponseEntity<?> createClient(@RequestBody ClientCreateWithCaptchaDto clientDto) {
+        logger.debug("POST /api/clients - Creating client with email: {}", clientDto.getEmail());
+        
         // Valider le token reCAPTCHA
         if (clientDto.getRecaptchaToken() == null || clientDto.getRecaptchaToken().trim().isEmpty()) {
-            return ResponseEntity.status(400).body("Token reCAPTCHA requis");
+            logger.warn("POST /api/clients - Missing reCAPTCHA token");
+            return ResponseEntity.badRequest().body(Map.of("message", "Token reCAPTCHA requis"));
         }
 
         if (!reCaptchaService.validateToken(clientDto.getRecaptchaToken())) {
-            return ResponseEntity.status(403).body("Validation reCAPTCHA échouée. Vous semblez être un robot.");
+            logger.warn("POST /api/clients - reCAPTCHA validation failed");
+            return ResponseEntity.status(403).body(Map.of("message", "Validation reCAPTCHA échouée. Vous semblez être un robot."));
         }
 
         // Valider l'email
         if (clientDto.getEmail() == null || clientDto.getEmail().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Email requis");
+            logger.warn("POST /api/clients - Missing email");
+            return ResponseEntity.badRequest().body(Map.of("message", "Email requis"));
         }
 
-        if (clientRepository.existsByEmailIgnoreCase(clientDto.getEmail().trim())) {
-            return ResponseEntity.status(409).body("Email déjà utilisé");
+        String normalizedEmail = clientDto.getEmail().trim().toLowerCase();
+        boolean emailExists = clientRepository.existsByEmailIgnoreCase(normalizedEmail);
+        logger.debug("POST /api/clients - Email {} exists: {}", normalizedEmail, emailExists);
+        
+        if (emailExists) {
+            logger.warn("POST /api/clients - Email {} already exists", normalizedEmail);
+            return ResponseEntity.status(409).body(Map.of("message", "Email déjà utilisé"));
         }
 
         // Créer le client à partir du DTO
@@ -59,7 +76,7 @@ public class ClientController {
         client.setNom(clientDto.getNom());
         client.setPrenom(clientDto.getPrenom());
         client.setGenre(clientDto.getGenre());
-        client.setEmail(clientDto.getEmail().trim().toLowerCase());
+        client.setEmail(normalizedEmail);
         client.setTelephone(clientDto.getTelephone());
         client.setAdresseLivraison(clientDto.getAdresseLivraison());
         client.setCodePostal(clientDto.getCodePostal());
@@ -72,8 +89,14 @@ public class ClientController {
             client.setEstActif(clientDto.getEstActif());
         }
 
-        Client created = clientRepository.save(client);
-        return ResponseEntity.status(201).body(created);
+        try {
+            Client created = clientRepository.save(client);
+            logger.info("POST /api/clients - Client created successfully with id: {}", created.getId());
+            return ResponseEntity.status(201).body(created);
+        } catch (Exception e) {
+            logger.error("POST /api/clients - Error creating client", e);
+            return ResponseEntity.status(500).body(Map.of("message", "Erreur lors de la création du client"));
+        }
     }
 
     @PutMapping("/{id}")

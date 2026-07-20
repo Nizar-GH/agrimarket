@@ -618,8 +618,21 @@ function AppContent() {
         setConnectedUserName([createdClient?.prenom ?? newUser.prenom, createdClient?.nom ?? newUser.nom].filter(Boolean).join(' ').trim());
       } catch (error: any) {
         const status = error?.response?.status;
-        if (status === 409 || status === 400) {
+        const apiData = error?.response?.data;
+        const apiMessage = typeof apiData === 'string'
+          ? apiData
+          : apiData?.message || '';
+
+        if (status === 409) {
           setProfileMessage('Cet email existe déjà. Connecte-toi avec ce compte.');
+          return;
+        }
+        if (status === 400) {
+          setProfileMessage(
+            apiMessage
+              ? String(apiMessage)
+              : 'Données invalides. Vérifie le formulaire et réessaie.'
+          );
           return;
         }
         if (status === 403) {

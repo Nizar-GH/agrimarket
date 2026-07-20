@@ -13,7 +13,10 @@ import {
 
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8283/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:8283/api' : '');
+if (!API_BASE_URL) {
+  console.error('VITE_API_BASE_URL n\'est pas défini. Configurez-le dans votre fichier .env ou .env.production.');
+}
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

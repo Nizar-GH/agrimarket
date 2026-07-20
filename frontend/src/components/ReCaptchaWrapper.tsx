@@ -1,17 +1,28 @@
-import React from 'react';
+import React, { createContext, useContext } from 'react';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
-export const ReCaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const reCaptchaKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || 'YOUR_RECAPTCHA_V3_SITE_KEY';
-  
+type ReCaptchaContextValue = {
+  getRecaptchaToken: (action?: string) => Promise<string | null>;
+};
+
+const ReCaptchaContext = createContext<ReCaptchaContextValue>({
+  getRecaptchaToken: async () => null,
+});
+
+const DevRecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const getRecaptchaToken = async (): Promise<string | null> => {
+    console.warn('reCAPTCHA non configuré localement : utilisation d\'un jeton de développement.');
+    return 'dev-recaptcha-token';
+  };
+
   return (
-    <GoogleReCaptchaProvider reCaptchaKey={reCaptchaKey}>
+    <ReCaptchaContext.Provider value={{ getRecaptchaToken }}>
       {children}
-    </GoogleReCaptchaProvider>
+    </ReCaptchaContext.Provider>
   );
 };
 
-export const useReCaptcha = () => {
+const RealReCaptchaProviderInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const getRecaptchaToken = async (action: string = 'submit'): Promise<string | null> => {
@@ -29,5 +40,36 @@ export const useReCaptcha = () => {
     }
   };
 
-  return { getRecaptchaToken };
+  return (
+    <ReCaptchaContext.Provider value={{ getRecaptchaToken }}>
+      {children}
+    </ReCaptchaContext.Provider>
+  );
 };
+
+export const ReCaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const reCaptchaKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+  const isDevelopment = import.meta.env.DEV === true;
+  const hasRealKey = Boolean(reCaptchaKey && reCaptchaKey !== 'YOUR_RECAPTCHA_V3_SITE_KEY');
+
+  if (!hasRealKey) {
+    if (isDevelopment) {
+      return <DevRecaptchaProvider>{children}</DevRecaptchaProvider>;
+    }
+
+    console.error('reCAPTCHA site key missing in production. La validation ne peut pas fonctionner.');
+    return (
+      <ReCaptchaContext.Provider value={{ getRecaptchaToken: async () => null }}>
+        {children}
+      </ReCaptchaContext.Provider>
+    );
+  }
+
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={reCaptchaKey}>
+      <RealReCaptchaProviderInner>{children}</RealReCaptchaProviderInner>
+    </GoogleReCaptchaProvider>
+  );
+};
+
+export const useReCaptcha = () => useContext(ReCaptchaContext);
